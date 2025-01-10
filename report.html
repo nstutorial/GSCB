@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashbook Reports</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        nav {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav .brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        nav ul li a:hover {
+            color: #d1e7ff;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        table tr:hover {
+            background-color: #ddd;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 50px;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .collapse-btn {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .collapse-btn:hover {
+        background-color: #45a049;
+    }
+
+    .details-row {
+        background-color: #f2f2f2;
+    }
+
+    .details-row table {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .details-row th, .details-row td {
+        text-align: left;
+        padding: 8px;
+    }
+    .search-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+        .search-input {
+            padding: 10px;
+            font-size: 16px;
+            width: 80%;
+            max-width: 400px;
+        }
+        .search-btn {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
+        .print-btn{
+            padding-left: 20px;
+        }
+        table{
+           width: 600px;
+        }
+        .view {
+    margin: 0 auto; /* Center horizontally */
+    width: 80%; /* Adjust the width as needed */
+    text-align: center; /* Center the text */
+    /* Add some space at the top */
+}
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Cashbook</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Entry Form</a></li>
+            <li><a href="production.html">Production Unit</a></li>
+            <li><a href="due-register.html">Due Entry</a></li>
+            <li><a href="purchase.html">Purchase Entry</a></li>
+            <li><a href="report.html">Reports</a></li>
+            <li><a href="reports2.html">Search</a></li>
+            <li><a href="ledger.html">Ledger</a></li>
+        </ul>
+    </nav>
+    <br>
+    <div class="print-btn">
+        <button class="print-btn" onclick="window.print()">Print Report</button>
+        <button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
+        
+    </div>
+    <div class="search-container">
+        <!-- <input type="text" id="searchInput" class="search-input" placeholder="Search for a transaction...">
+        <button class="search-btn" onclick="searchTable()">Search</button> -->
+    </div>
+
+    <h2>Cashbook Summery Reports</h2>
+    <div id="content">
+        <div class="loading">Loading data...</div>
+    </div>
+
+    <script>
+  const fetchReports = async () => {
+    const contentDiv = document.getElementById("content");
+    contentDiv.innerHTML = "<div class='loading'>Loading data...</div>"; // Show loading state
+
+    try {
+        const response = await fetch("http://localhost:5000/reports");
+
+        // Log response for debugging
+        console.log("Response Status:", response.status);
+        console.log("Response OK:", response.ok);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched data:", data);
+
+        if (!data || data.length === 0) {
+            contentDiv.innerHTML = "<div class='loading'>No records found.</div>";
+            return;
+        }
+
+
+        
+        // Create the table
+        const table = document.createElement("table");
+        table.id = "report-table";
+        table.innerHTML = `
+
+<!-- Summary Table for Total Cash, Debit, and Balance -->
+<div class="view">
+    <table >
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Total Credit Cash</th>
+            <th>Total Debit Cash</th>
+            <th>Cash in hand</th>
+            <th>Total Credit in Bank</th>
+            <th>Total Debit from Bank</th>
+            <th>Cash in Bank</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Grand Total</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.credits.reduce((creditTotal, credit) => creditTotal + credit.cash, 0);
+            }, 0)}</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.debits.reduce((debitTotal, debit) => debitTotal + debit.cash, 0);
+            }, 0)}</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.credits.reduce((creditTotal, credit) => creditTotal + credit.cash, 0) -
+                entry.debits.reduce((debitTotal, debit) => debitTotal + debit.cash, 0);
+            }, 0)}</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.credits.reduce((creditTotal, credit) => creditTotal + credit.bank, 0);
+            }, 0)}</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.debits.reduce((debitTotal, debit) => debitTotal + debit.bank, 0);
+            }, 0)}</strong></td>
+            <td><strong>${data.reduce((total, entry) => {
+                return total + entry.credits.reduce((creditTotal, credit) => creditTotal + credit.bank, 0) -
+                entry.debits.reduce((debitTotal, debit) => debitTotal + debit.bank, 0);
+            }, 0)}</strong></td>
+        </tr>
+    </tbody>
+    <br>
+</table>
+
+<!-- Head-wise Summary Table with Collapsibles -->
+<table class="collapse-table">
+    <thead>
+        <tr>
+            <th>Head</th>
+            <th>Total Credit Amount (Cash)</th>
+            <th>Total Debit Amount (Cash)</th>
+            <th>Total Credit in Bank</th>
+            <th>Total Debit from Bank</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${Object.entries(
+            data.reduce((summary, entry) => {
+                // Process credits
+                entry.credits.forEach(credit => {
+                    if (!summary[credit.head]) {
+                        summary[credit.head] = {
+                            creditCash: 0,
+                            debitCash: 0,
+                            creditBank: 0,
+                            debitBank: 0,
+                            transactions: []  // Store transactions per head
+                        };
+                    }
+                    summary[credit.head].creditCash += credit.cash;
+                    summary[credit.head].creditBank += credit.bank;
+                    summary[credit.head].transactions.push({
+                        date: entry.date,
+                        description: credit.description,
+                        cash: credit.cash,
+                        bank: credit.bank,
+                        type: "credit"
+                    });
+                });
+
+                // Process debits
+                entry.debits.forEach(debit => {
+                    if (!summary[debit.head]) {
+                        summary[debit.head] = {
+                            creditCash: 0,
+                            debitCash: 0,
+                            creditBank: 0,
+                            debitBank: 0,
+                            transactions: []  // Store transactions per head
+                        };
+                    }
+                    summary[debit.head].debitCash += debit.cash;
+                    summary[debit.head].debitBank += debit.bank;
+                    summary[debit.head].transactions.push({
+                        date: entry.date,
+                        description: debit.description,
+                        cash: debit.cash,
+                        bank: debit.bank,
+                        type: "debit"
+                    });
+                });
+
+                return summary;
+            }, {})
+        ).map(([head, totals]) => `
+            <tr>
+                <td>
+                    <button class="collapse-btn" onclick="toggleDetails('${head}')">${head}</button>
+                </td>
+                <td>${totals.creditCash}</td>
+                <td>${totals.debitCash}</td>
+                <td>${totals.creditBank}</td>
+                <td>${totals.debitBank}</td>
+            </tr>
+            <tr id="${head}-details" class="details-row" style="display:none;">
+                <td colspan="5">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Cash</th>
+                                <th>Bank</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    ${totals.transactions.map(transaction => `
+        <tr>
+            <td>${new Date(transaction.date).toLocaleDateString()}</td>
+            <td>${transaction.description}</td>
+            <td>${transaction.type === "credit" ? transaction.cash : transaction.type === "debit" ? transaction.cash : ""}</td>
+            <td>${transaction.type === "credit" ? transaction.bank : transaction.type === "debit" ? transaction.bank : ""}</td>
+            <td>${transaction.type}</td>
+        </tr>
+    `).join("")}
+</tbody>
+
+                    </table>
+                </td>
+            </tr>
+        `).join("")}
+    </tbody>
+</table>
+    
+    </div>
+
+        `;
+
+        
+
+        contentDiv.innerHTML = ""; // Clear loading message
+        contentDiv.appendChild(table); // Append the table
+    } catch (error) {
+        console.error("Error fetching reports:", error);
+        contentDiv.innerHTML = "<div class='error'>Failed to load data. Please try again later.</div>";
+    }
+};
+function searchTable() {
+    const input = document.getElementById("searchInput");
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("report-table");
+    const rows = table.getElementsByTagName("tr");
+
+    // Hide the div with class 'view' when the search starts
+    const viewDiv = document.querySelector(".view");
+    if (viewDiv) {
+        viewDiv.style.display = "none"; // Hide the div
+    }
+
+    // Loop through each row of the main table
+    for (let i = 1; i < rows.length; i++) { // Skip the header row
+        const row = rows[i];
+        let found = false;
+
+        // Check if any cell in the row matches the search query
+        for (let j = 0; j < row.cells.length; j++) {
+            const cell = row.cells[j];
+            if (cell.innerText.toLowerCase().includes(filter)) {
+                found = true;
+                break;
+            }
+        }
+
+        // Show or hide the row based on whether a match was found
+        row.style.display = found ? "" : "none";
+    }
+}
+
+
+fetchReports();
+
+    </script>
+    <script>
+        // Function to toggle the visibility of the transaction details
+        function toggleDetails(head) {
+            var detailsRow = document.getElementById(head + "-details");
+            if (detailsRow.style.display === "none" || detailsRow.style.display === "") {
+                detailsRow.style.display = "table-row"; // Show the details
+            } else {
+                detailsRow.style.display = "none"; // Hide the details
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+     <script>
+       function exportToExcel() {
+    // Get the table element by ID
+    const table = document.getElementById("report-table");
+    if (!table) {
+        alert("No report table found to export.");
+        return;
+    }
+
+    // Create a workbook and a worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.table_to_sheet(table);
+
+    // Append worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Cashbook Report");
+
+    // Export the workbook as an Excel file
+    const fileName = "Cashbook_Report.xlsx";
+    XLSX.writeFile(workbook, fileName);
+}
+
+    </script>
+    
+    
+</body>
+</html>

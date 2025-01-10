@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Unit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        nav {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav .brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        nav ul li a:hover {
+            color: #d1e7ff;
+        }
+        .container {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 1000px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        #productionForm{
+            margin: 20px auto;
+            width: 90%;
+            max-width: 500px;
+            background: rgb(223, 220, 220);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        label{
+            font-weight: bold;
+            padding-left: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th, td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input, select {
+            width: 97%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .summary h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+        .summary p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Cashbook</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Entry Form</a></li>
+            <li><a href="production.html">Production Unit</a></li>
+            <li><a href="due-register.html">Due Entry</a></li>
+            <li><a href="purchase.html">Purchase Entry</a></li>
+            <li><a href="report.html">Reports</a></li>
+            <li><a href="reports2.html">Search</a></li>
+            <li><a href="ledger.html">Ledger</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Fly Ash & Paver Block Production</h1>
+        
+        <!-- Form to enter production data -->
+        <form id="productionForm">
+            <div class="production-row">
+                <label for="productionType">Type of Production</label>
+                <select id="productionType" required>
+                    <option value="Fly Ash Brick">Fly Ash Brick</option>
+                    <option value="Paver Block">Paver Block</option>
+                </select>
+
+                <label for="shapeName">Shape Name</label>
+                <input type="text" id="shapeName" placeholder="Enter Shape Name (e.g., Fly Brick, Paver Block Shape)" required>
+
+                <label for="materialCost">Material Cost</label>
+                <input type="number" id="materialCost" placeholder="Enter Material Cost" required>
+
+                <label for="labourUsed">No. of Labour Used</label>
+                <input type="number" id="labourUsed" placeholder="Enter number of labour used" required>
+
+                <label for="labourCost">Labour Cost</label>
+                <input type="number" id="labourCost" placeholder="Enter Labour Cost" required>
+
+                <label for="otherCost">Other Cost</label>
+                <input type="number" id="otherCost" placeholder="Enter Other Costs" required>
+
+                <label for="sellValue">Sell Value</label>
+                <input type="number" id="sellValue" placeholder="Enter Sell Value" required>
+
+                <label for="productionCost">Production Cost</label>
+                <input type="number" id="productionCost" readonly>
+            </div>
+            
+            <button type="button" onclick="addRow()">Add Production Row</button>
+        </form>
+
+        <!-- Table to display production entries -->
+        <table id="productionTable">
+            <thead>
+                <tr>
+                    <th>Type of Production</th>
+                    <th>Shape Name</th>
+                    <th>Material Cost</th>
+                    <th>No. of Labour Used</th>
+                    <th>Labour Cost</th>
+                    <th>Other Cost</th>
+                    <th>Production Cost</th>
+                    <th>Sell Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic rows will appear here -->
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary" id="summary" style="display: none;">
+            <h2>Today's Production Summary</h2>
+            <p><strong>Total Production Cost:</strong> <span id="summaryProductionCost"></span></p>
+            <p><strong>Total Sell Value:</strong> <span id="summarySellValue"></span></p>
+        </div>
+        <br>
+        <!-- Submit Button -->
+        <button type="button" onclick="submitData()">Submit Production Data</button>
+    </div>
+
+    <script>
+        let productionData = [];
+
+        // Calculate production cost based on material, labor, and other costs
+        function calculateProductionCost() {
+            const materialCost = parseFloat(document.getElementById("materialCost").value) || 0;
+            const labourCost = parseFloat(document.getElementById("labourCost").value) || 0;
+            const otherCost = parseFloat(document.getElementById("otherCost").value) || 0;
+            const productionCost = materialCost + labourCost + otherCost;
+
+            document.getElementById("productionCost").value = productionCost.toFixed(2);
+        }
+
+        // Event listeners to trigger calculation of production cost
+        document.getElementById("materialCost").addEventListener("input", calculateProductionCost);
+        document.getElementById("labourCost").addEventListener("input", calculateProductionCost);
+        document.getElementById("otherCost").addEventListener("input", calculateProductionCost);
+
+        // Add a new row to the table
+        function addRow() {
+            const productionType = document.getElementById("productionType").value;
+            const shapeName = document.getElementById("shapeName").value;
+            const materialCost = parseFloat(document.getElementById("materialCost").value) || 0;
+            const labourUsed = parseInt(document.getElementById("labourUsed").value) || 0;
+            const labourCost = parseFloat(document.getElementById("labourCost").value) || 0;
+            const otherCost = parseFloat(document.getElementById("otherCost").value) || 0;
+            const sellValue = parseFloat(document.getElementById("sellValue").value) || 0;
+            const productionCost = materialCost + labourCost + otherCost;
+
+            // Push the row data into productionData
+            productionData.push({
+                productionType,
+                shapeName,
+                materialCost,
+                labourUsed,
+                labourCost,
+                otherCost,
+                productionCost,
+                sellValue
+            });
+
+            // Create a new row and append it to the table
+            const tableBody = document.getElementById("productionTable").querySelector("tbody");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${productionType}</td>
+                <td>${shapeName}</td>
+                <td>${materialCost.toFixed(2)}</td>
+                <td>${labourUsed}</td>
+                <td>${labourCost.toFixed(2)}</td>
+                <td>${otherCost.toFixed(2)}</td>
+                <td>${productionCost.toFixed(2)}</td>
+                <td>${sellValue.toFixed(2)}</td>
+            `;
+            tableBody.appendChild(row);
+
+            // Clear the input fields for next entry
+            document.getElementById("productionForm").reset();
+
+            // Update the summary
+            updateSummary();
+        }
+
+        // Update the summary with total production cost and sell value
+        function updateSummary() {
+            let totalProductionCost = 0;
+            let totalSellValue = 0;
+
+            productionData.forEach(data => {
+                totalProductionCost += data.productionCost;
+                totalSellValue += data.sellValue;
+            });
+
+            document.getElementById("summaryProductionCost").innerText = totalProductionCost.toFixed(2);
+            document.getElementById("summarySellValue").innerText = totalSellValue.toFixed(2);
+
+            document.getElementById("summary").style.display = "block";
+        }
+
+        // Submit the production data to the server
+        async function submitData() {
+    try {
+        const response = await fetch('http://localhost:5000/api/production/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productionData), // Ensure you're passing the right data
+        });
+
+        const data = await response.json(); // Try to parse the response as JSON
+
+       // Continue from the try block
+       if (response.ok) {
+            alert(data.message); // Show success message
+            productionData = []; // Reset the form data after successful submission
+            document.getElementById("productionTable").querySelector("tbody").innerHTML = ''; // Clear the table
+            document.getElementById("summary").style.display = "none"; // Hide the summary section
+        } else {
+            // Show error message if the response is not ok
+            alert(data.error || 'Failed to save production data.');
+        }
+    } catch (error) {
+        console.error('Error submitting data:', error);
+        alert('An error occurred while saving production data.');
+    }
+}
+
+    </script>
+</body>
+</html>

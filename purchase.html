@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        nav {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav .brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        nav ul li a:hover {
+            color: #d1e7ff;
+        }
+        .container {
+    display: flex;
+    flex-wrap: nowrap; /* Ensure items stay in a single row */
+    gap: 20px; /* Add spacing between form and table */
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to the top */
+    margin: 20px auto;
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.left-section, .right-section {
+    flex: 1;
+    max-width: 48%; /* Take up 48% of the container width */
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+form input, form select, form button {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+form button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th, td {
+    padding: 12px;
+    font-size: 14px;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+h3{
+    text-align: center;
+}
+.summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .summary h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+        .summary p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* Stack columns on small screens */
+    }
+
+    .left-section, .right-section {
+        max-width: 100%;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Cashbook</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Entry Form</a></li>
+            <li><a href="production.html">Production Unit</a></li>
+            <li><a href="due-register.html">Due Entry</a></li>
+            <li><a href="purchase.html">Purchase Entry</a></li>
+            <li><a href="report.html">Reports</a></li>
+            <li><a href="reports2.html">Search</a></li>
+            <li><a href="ledger.html">Ledger</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="left-section">
+        <h3>Purchase Entry Form</h3>
+        <form id="purchaseForm">
+            <label for="date">Purchase Date</label>
+            <input type="date" id="date"  required>
+            <span class="error" id="dateError"></span>
+
+            <label for="itemName">Item Name</label>
+            <input type="text" id="itemName" placeholder="Enter Item Name" required>
+            <span class="error" id="itemNameError"></span>
+            
+            <label for="supplierName">Supplier Name</label>
+            <input type="text" id="supplierName" placeholder="Enter Supplier Name" required>
+            <span class="error" id="supplierNameError"></span>
+            
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" placeholder="Enter Quantity" required>
+            <span class="error" id="quantityError"></span>
+            
+            <label for="pricePerUnit">Price per Unit</label>
+            <input type="number" id="pricePerUnit" placeholder="Enter Price per Unit" required>
+            <span class="error" id="pricePerUnitError"></span>
+            
+            <label for="totalCost">Total Cost</label>
+            <input type="number" id="totalCost" readonly>
+            
+            <button type="button" onclick="addPurchase()">Add Purchase</button>
+        </form>
+    </div>
+    <div class="right-section">
+        <h3>Summery Table</h3>
+        <table id="purchaseTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item Name</th>
+                    <th>Supplier Name</th>
+                    <th>Quantity</th>
+                    <th>Price per Unit</th>
+                    <th>Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic rows will appear here -->
+            </tbody>
+        </table>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h2>Purchase Summary</h2>
+            <p><strong>Total Items Purchased:</strong> <span id="summaryTotalItems"></span></p>
+            <p><strong>Total Cost:</strong> <span id="summaryTotalCost"></span></p>
+        </div>
+        <br>
+        <button type="button" onclick="submitPurchases()">Submit Purchases</button>
+    </div>
+</div>
+    <script>
+
+        
+
+        let purchases = [];
+
+        // Calculate total cost
+        function calculateTotalCost() {
+            const quantity = parseFloat(document.getElementById("quantity").value) || 0;
+            const pricePerUnit = parseFloat(document.getElementById("pricePerUnit").value) || 0;
+            const totalCost = quantity * pricePerUnit;
+            document.getElementById("totalCost").value = totalCost.toFixed(2);
+        }
+
+        // Event listeners for calculation
+        document.getElementById("quantity").addEventListener("input", calculateTotalCost);
+        document.getElementById("pricePerUnit").addEventListener("input", calculateTotalCost);
+
+        // Add purchase entry
+        function addPurchase() {
+    // Clear previous error messages
+    document.querySelectorAll('.error').forEach(error => error.textContent = '');
+
+    let isValid = true;
+    const date = document.getElementById("date").value.trim();
+    if (date === "") { // Correctly checks if the date field is empty
+        document.getElementById("dateError").textContent = "Date is required.";
+        isValid = false;
+    }
+
+    // Validate item name
+    const itemName = document.getElementById("itemName").value.trim();
+    if (itemName === "") {
+        document.getElementById("itemNameError").textContent = "Item Name is required.";
+        isValid = false;
+    }
+
+    // Validate supplier name
+    const supplierName = document.getElementById("supplierName").value.trim();
+    if (supplierName === "") {
+        document.getElementById("supplierNameError").textContent = "Supplier Name is required.";
+        isValid = false;
+    }
+
+    // Validate quantity
+    const quantity = parseFloat(document.getElementById("quantity").value);
+    if (isNaN(quantity) || quantity <= 0) {
+        document.getElementById("quantityError").textContent = "Quantity must be a positive number.";
+        isValid = false;
+    }
+
+    // Validate price per unit
+    const pricePerUnit = parseFloat(document.getElementById("pricePerUnit").value);
+    if (isNaN(pricePerUnit) || pricePerUnit <= 0) {
+        document.getElementById("pricePerUnitError").textContent = "Price per Unit must be a positive number.";
+        isValid = false;
+    }
+
+    // If form is not valid, show alert and exit the function
+    if (!isValid) {
+        alert('All fields are required and must be valid.');
+        return;
+    }
+
+    // Calculate total cost
+    const totalCost = quantity * pricePerUnit;
+
+    // Create purchase object
+    const purchase = {
+        date: date,
+        itemName: itemName,
+        supplierName: supplierName,
+        quantity: quantity,
+        pricePerUnit: pricePerUnit,
+        totalCost: totalCost
+    };
+
+    // Add purchase to purchases array
+    purchases.push(purchase);
+
+    // Add to the table
+    const purchaseTable = document.getElementById("purchaseTable").getElementsByTagName("tbody")[0];
+    const newRow = purchaseTable.insertRow();
+    newRow.innerHTML = `
+        <td>${date}</td>
+        <td>${itemName}</td>
+        <td>${supplierName}</td>
+        <td>${quantity}</td>
+        <td>${pricePerUnit.toFixed(2)}</td>
+        <td>${totalCost.toFixed(2)}</td>
+    `;
+
+    // Update summary
+    calculateSummary();
+
+    // Clear the form fields
+    document.getElementById("purchaseForm").reset();
+}
+
+
+function calculateSummary() {
+    const rows = document.getElementById("purchaseTable").getElementsByTagName("tbody")[0].rows;
+    let totalItems = 0;
+    let totalCost = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const quantity = parseFloat(rows[i].cells[2].innerText);
+        const cost = parseFloat(rows[i].cells[4].innerText);
+
+        totalItems += quantity;
+        totalCost += cost;
+    }
+
+    // Display the summary
+    document.getElementById("summary").style.display = "block";
+    document.getElementById("summaryTotalItems").innerText = totalItems;
+    document.getElementById("summaryTotalCost").innerText = totalCost.toFixed(2);
+}
+
+
+        // Submit purchases
+       // Submit purchases
+async function submitPurchases() {
+    if (purchases.length === 0) {
+        alert("No purchases to submit.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:5000/purchase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(purchases), // Send purchases array
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+            purchases = [];  // Clear the purchases array after successful submission
+            document.getElementById("purchaseTable").querySelector("tbody").innerHTML = '';
+            document.getElementById("summary").style.display = "none";
+        } else {
+            alert("Failed to submit data: " + data.error);
+        }
+    } catch (error) {
+        alert("Error submitting data: " + error.message);
+    }
+}
+
+    </script>
+</body>
+</html>

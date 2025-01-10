@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Due Register</title>
+    <style>
+      /* Same styling as previous */
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      nav {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        position: sticky;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav .brand {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        margin: 0;
+        padding: 0;
+      }
+      nav ul li {
+        margin: 0 15px;
+      }
+      nav ul li a {
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+      }
+      nav ul li a:hover {
+        color: #d1e7ff;
+      }
+      .container {
+        margin: 20px auto;
+        width: 90%;
+        max-width: 1000px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      #dueRegisterForm {
+        margin: 20px auto;
+        width: 90%;
+        max-width: 400px;
+        background: rgb(234, 228, 228);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(227, 223, 223, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+      th,
+      td {
+        padding: 12px;
+        font-size: 14px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      input,
+      select {
+        width: 90%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .summary {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f4f4f4;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .summary h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+      .summary p {
+        margin: 5px 0;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="brand">Cashbook</div>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Entry Form</a></li>
+            <li><a href="production.html">Production Unit</a></li>
+            <li><a href="due-register.html">Due Entry</a></li>
+            <li><a href="purchase.html">Purchase Entry</a></li>
+            <li><a href="report.html">Reports</a></li>
+            <li><a href="reports2.html">Search</a></li>
+            <li><a href="ledger.html">Ledger</a></li>
+      </ul>
+    </nav>
+
+    <div class="container">
+      <h1>Due Entry Form</h1>
+
+      <!-- Form to enter due payment data -->
+      <form id="dueRegisterForm">
+        <div class="due-row">
+          <label for="dueDate">Date</label>
+          <input type="date" id="dueDate" required />
+
+          <label for="dueName"> Name</label>
+          <input type="text" id="dueName" placeholder="Enter Name" required />
+
+          <label for="dueAmount">Bill Amount</label>
+          <input
+            type="number"
+            id="dueAmount"
+            placeholder="Enter Due Amount"
+            required
+          />
+
+          <label for="paidAmount">Paid Amount</label>
+          <input
+            type="number"
+            id="paidAmount"
+            placeholder="Enter Paid Amount"
+            required
+            oninput="updateRemainingAmount()"
+          />
+
+          <label for="remainingAmount">Remaining Amount</label>
+          <input
+            type="number"
+            id="remainingAmount"
+            placeholder="Calculated Remaining Amount"
+            readonly
+          />
+
+          <label for="remarks">Remarks</label>
+          <input
+            type="text"
+            id="remarks"
+            placeholder="Enter Remarks"
+            required
+          />
+
+          <label for="paymentDate">Payment Date</label>
+          <input type="date" id="paymentDate" />
+        </div>
+
+        <button type="button" onclick="addDueRow()">Add Due Entry</button>
+      </form>
+
+      <!-- Table to display due register entries -->
+      <table id="dueTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Bill Amount</th>
+            <th>Paid Amount</th>
+            <th>Remaining Amount</th>
+            <th>Remarks</th>
+            <th>Due Date</th>
+            <th>Payment Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dynamic rows will appear here -->
+        </tbody>
+      </table>
+
+      <!-- Summary Section -->
+      <div class="summary" id="summary" style="display: none">
+        <h2>Today's Due Register Summary</h2>
+        <p>
+          <strong>Total Due Amount:</strong> <span id="summaryTotalDue"></span>
+        </p>
+        <p>
+          <strong>Total Paid Amount:</strong>
+          <span id="summaryTotalPaid"></span>
+        </p>
+        <p>
+          <strong>Total Remaining Amount:</strong>
+          <span id="summaryTotalRemaining"></span>
+        </p>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="button" onclick="submitDueData()">
+        Submit Due Register
+      </button>
+    </div>
+
+    <script>
+      let dueData = [];
+
+      // Function to update remaining amount
+      function updateRemainingAmount() {
+    const dueAmount = parseFloat(document.getElementById("dueAmount").value) || 0;
+    const paidAmount = parseFloat(document.getElementById("paidAmount").value) || 0;
+
+    if (paidAmount > dueAmount) {
+        alert('Paid amount cannot exceed due amount.');
+        document.getElementById("paidAmount").value = '';
+        document.getElementById("remainingAmount").value = dueAmount.toFixed(2);
+        return;
+    }
+
+    const remainingAmount = dueAmount - paidAmount;
+    document.getElementById("remainingAmount").value = remainingAmount.toFixed(2);
+}
+
+
+      // Add a new row to the table
+      function addDueRow() {
+        const dueName = document.getElementById("dueName").value;
+        const dueAmount =
+          parseFloat(document.getElementById("dueAmount").value) || 0;
+        const paidAmount =
+          parseFloat(document.getElementById("paidAmount").value) || 0;
+        const remainingAmount =
+          parseFloat(document.getElementById("remainingAmount").value) || 0;
+        const remarks = document.getElementById("remarks").value;
+        const dueDate = document.getElementById("dueDate").value;
+        const paymentDate = document.getElementById("paymentDate").value;
+        if (!dueName || !dueAmount || !paidAmount || !dueDate) {
+    alert('Please fill out all required fields.');
+    return;
+}
+
+        // Push the row data into dueData
+        dueData.push({
+          dueName,
+          dueAmount,
+          paidAmount,
+          remainingAmount,
+          remarks,
+          dueDate,
+          paymentDate,
+        });
+
+        // Create a new row and append it to the table
+        const tableBody = document
+          .getElementById("dueTable")
+          .querySelector("tbody");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                <td>${dueName}</td>
+                <td>${dueAmount.toFixed(2)}</td>
+                <td>${paidAmount.toFixed(2)}</td>
+                <td>${remainingAmount.toFixed(2)}</td>
+                <td>${remarks}</td>
+                <td>${dueDate}</td>
+                <td>${paymentDate}</td>
+            `;
+        tableBody.appendChild(row);
+
+        // Clear the input fields for next entry
+        document.getElementById("dueRegisterForm").reset();
+
+        // Update the summary
+        updateDueSummary();
+      }
+
+      // Update the summary with total due, paid, and remaining amounts
+      function updateDueSummary() {
+        let totalDueAmount = 0;
+        let totalPaidAmount = 0;
+        let totalRemainingAmount = 0;
+
+        dueData.forEach((data) => {
+          totalDueAmount += data.dueAmount;
+          totalPaidAmount += data.paidAmount;
+          totalRemainingAmount += data.remainingAmount;
+        });
+
+        document.getElementById("summaryTotalDue").innerText =
+          totalDueAmount.toFixed(2);
+        document.getElementById("summaryTotalPaid").innerText =
+          totalPaidAmount.toFixed(2);
+        document.getElementById("summaryTotalRemaining").innerText =
+          totalRemainingAmount.toFixed(2);
+
+        document.getElementById("summary").style.display = "block";
+      }
+
+      // Submit the due register data to the server
+      async function submitDueData() {
+        if (dueData.length === 0) {
+          alert("No data to submit");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:5000/api/dueregister/save",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(dueData), // Ensure you're passing the right data
+            }
+          );
+
+          const data = await response.json(); // Try to parse the response as JSON
+
+          if (response.ok) {
+            alert(data.message); // Show success message
+            dueData = []; // Reset the form data after successful submission
+            document
+              .getElementById("dueTable")
+              .querySelector("tbody").innerHTML = ""; // Clear the table
+          } else {
+            alert("Error: " + data.error); // Show error message
+          }
+        } catch (error) {
+          alert("Failed to submit data: " + error.message);
+          console.error("Error:", error); // Log the error for debugging
+        }
+      }
+    </script>
+  </body>
+</html>

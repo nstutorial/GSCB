@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashbook Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .preview {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            text-align: left;
+            color: #555;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .form-actions button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cashbook Preview</h1>
+    <div class="preview" id="preview">
+        <div class="section">
+            <h2>General Information</h2>
+            <p><strong>Date:</strong> <span id="previewDate"></span></p>
+            <p><strong>Opening Balance:</strong> <span id="previewOpeningBalance"></span></p>
+            <p><strong>Closing Balance:</strong> <span id="previewClosingBalance"></span></p>
+        </div>
+
+        <div class="section">
+            <h2>Credit Transactions</h2>
+            <table id="creditTable">
+                <thead>
+                    <tr>
+                        <th>Head of Account</th>
+                        <th>Description</th>
+                        <th>Cash</th>
+                        <th>Bank</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Credit rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Debit Transactions</h2>
+            <table id="debitTable">
+                <thead>
+                    <tr>
+                        <th>Head of Account</th>
+                        <th>Description</th>
+                        <th>Cash</th>
+                        <th>Bank</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Debit rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" onclick="finalSubmit()">Submit</button>
+            <button type="button" onclick="downloadAsImage()">Download as Image</button>
+            <button type="button" onclick="downloadAsPDF()">Download as PDF</button>
+            <button type="button" onclick="goBackToForm()">Go Back</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Load the data from localStorage or pass data from the previous page
+        function loadData() {
+            const formData = JSON.parse(localStorage.getItem('cashbookData'));
+            if (!formData) {
+                alert('No data to preview!');
+                return;
+            }
+
+            // Display general information
+            document.getElementById('previewDate').textContent = formData.date;
+            document.getElementById('previewOpeningBalance').textContent = formData.openingBalance;
+            document.getElementById('previewClosingBalance').textContent = formData.closingBalance;
+
+            // Populate credit table
+            const creditTable = document.getElementById('creditTable').querySelector('tbody');
+            formData.credits.forEach(credit => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${credit.head}</td>
+                    <td>${credit.description}</td>
+                    <td>${credit.cash}</td>
+                    <td>${credit.bank}</td>
+                `;
+                creditTable.appendChild(row);
+            });
+
+            // Populate debit table
+            const debitTable = document.getElementById('debitTable').querySelector('tbody');
+            formData.debits.forEach(debit => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${debit.head}</td>
+                    <td>${debit.description}</td>
+                    <td>${debit.cash}</td>
+                    <td>${debit.bank}</td>
+                `;
+                debitTable.appendChild(row);
+            });
+        }
+
+     
+        // modified
+//         function finalSubmit() {
+//     const formData = JSON.parse(localStorage.getItem('cashbookData'));
+//     if (!formData) {
+//         alert('No data to submit!');
+//         return;
+//     }
+
+//     fetch('http://localhost:5000/api/cashbook/save', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify(formData),
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         alert(data.message || 'Data submitted successfully!');
+//         downloadAsImage();
+//         goBackToForm();
+//     })
+//     .catch(error => {
+//         console.error('Error submitting data:', error);
+//         alert('Failed to submit data.');
+//     });
+// }
+
+
+function finalSubmit() {
+    const formData = JSON.parse(localStorage.getItem('cashbookData'));
+    if (!formData) {
+        alert('No data to submit!');
+        return;
+    }
+
+    fetch('http://localhost:5000/api/cashbook/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message || 'Data submitted successfully!');
+
+        // Wait until data is submitted before downloading the image
+        const preview = document.getElementById('preview');
+        html2canvas(preview).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'cashbook_preview.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            // Redirect to the form after downloading
+            goBackToForm();
+        });
+    })
+    .catch(error => {
+        console.error('Error submitting data:', error);
+        alert('Failed to submit data.');
+    });
+}
+
+        // end modified
+
+        function downloadAsImage() {
+            const preview = document.getElementById('preview');
+            html2canvas(preview).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'cashbook_preview.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function downloadAsPDF() {
+            const preview = document.getElementById('preview');
+            html2canvas(preview).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('cashbook_preview.pdf');
+            });
+        }
+
+        function goBackToForm() {
+            const formData = JSON.parse(localStorage.getItem('cashbookData'));
+            if (formData) {
+                localStorage.setItem('cashbookFormPrefill', JSON.stringify(formData));
+                window.location.href = 'index.html';
+            } else {
+                alert('No data available to prefill the form!');
+            }
+        }
+
+        // Load data on page load
+        window.onload = loadData;
+    </script>
+</body>
+</html>

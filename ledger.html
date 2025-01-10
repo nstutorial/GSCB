@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Purchase Details</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e2e2e2;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .collapsible {
+            background-color: #2ecc71;
+            color: white;
+            cursor: pointer;
+            padding: 12px 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        .collapsible:hover {
+            background-color: #27ae60;
+        }
+        .active, .collapsible:focus {
+            background-color: #16a085;
+        }
+        .content {
+            padding: 0 18px;
+            display: none;
+            background-color: #f1f1f1;
+            border-top: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .content table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .content th, .content td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #95a5a6;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        nav .brand {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #d1e7ff;
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+      
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Entry Form</a></li>
+            <li><a href="production.html">Production Unit</a></li>
+            <li><a href="due-register.html">Due Entry</a></li>
+            <li><a href="purchase.html">Purchase Entry</a></li>
+            <li><a href="report.html">Reports</a></li>
+            <li><a href="reports2.html">Search</a></li>
+            <li><a href="ledger.html">Ledger</a></li>
+        </ul>
+    </nav>
+<div class="container">
+    <h2>Supplier Purchase Details</h2>
+    <table id="supplierTable">
+        <thead>
+            <tr>
+                <th>Supplier Name</th>
+                <th>Total Purchase Amount</th>
+                <th>Total Payment Made</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be injected here using JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Function to fetch and group supplier data
+    async function fetchSupplierData() {
+        try {
+            const purchaseResponse = await fetch("http://localhost:5000/purchase-report"); // Replace with your API endpoint
+            const cashbookResponse = await fetch("http://localhost:5000/reports");
+            const purchases = await purchaseResponse.json();
+            const cashbook = await cashbookResponse.json();
+
+            // Initialize total sums for payments made
+            const paymentsBySupplier = {};
+
+            // Loop through the cashbook and filter debits for "Purchase"
+            cashbook.forEach(entry => {
+                entry.debits
+                    .filter(debit => debit.head === "Purchase")  // Filter debits for 'Purchase'
+                    .forEach(debit => {
+                        const supplierName = debit.description; // Assuming description holds supplier name
+                        if (!paymentsBySupplier[supplierName]) {
+                            paymentsBySupplier[supplierName] = { totalCash: 0, totalBank: 0 };
+                        }
+                        paymentsBySupplier[supplierName].totalCash += debit.cash;
+                        paymentsBySupplier[supplierName].totalBank += debit.bank;
+                    });
+            });
+
+            // Group purchases by supplier name
+            const suppliers = purchases.reduce((acc, purchase) => {
+                if (!acc[purchase.supplierName]) {
+                    acc[purchase.supplierName] = [];
+                }
+                acc[purchase.supplierName].push(purchase);
+                return acc;
+            }, {});
+
+            const supplierTableBody = document.querySelector('#supplierTable tbody');
+            supplierTableBody.innerHTML = ''; // Clear existing data
+
+            // Iterate through each supplier and display their purchase details
+            for (const supplierName in suppliers) {
+                const supplierPurchases = suppliers[supplierName];
+
+                // Calculate total purchase amount
+                const totalPurchaseAmount = supplierPurchases.reduce((sum, purchase) => sum + purchase.totalCost, 0);
+
+                // Get total payments made for this supplier (from paymentsBySupplier object)
+                const paymentData = paymentsBySupplier[supplierName] || { totalCash: 0, totalBank: 0 };
+                const totalPaymentMade = paymentData.totalCash + paymentData.totalBank;
+
+                // Calculate balance
+                const balance = totalPurchaseAmount - totalPaymentMade;
+
+                const supplierRow = document.createElement('tr');
+                supplierRow.innerHTML = `
+                    <td>
+                        <button class="collapsible">${supplierName}</button>
+                        <div class="content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Item Name</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${supplierPurchases.map(purchase => `
+                                        <tr>
+                                            <td>${new Date(purchase.date).toLocaleDateString()}</td>
+                                            <td>${purchase.itemName}</td>
+                                            <td>${purchase.quantity}</td>
+                                            <td>${purchase.pricePerUnit}</td>
+                                            <td>${purchase.totalCost}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td>${totalPurchaseAmount.toFixed(2)}</td>
+                    <td>${totalPaymentMade.toFixed(2)}</td>
+                    <td>${balance.toFixed(2)}</td>
+                `;
+                supplierTableBody.appendChild(supplierRow);
+            }
+
+            // Add collapsible functionality
+            const collapsibles = document.querySelectorAll('.collapsible');
+            collapsibles.forEach(collapsible => {
+                collapsible.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+                });
+            });
+        } catch (error) {
+            console.error('Error fetching supplier data:', error);
+        }
+    }
+
+    // Call the function on page load
+    window.onload = fetchSupplierData;
+</script>
+
+<div class="footer">
+    <p>For any queries, <a href="mailto:support@yourcompany.com">contact support</a>.</p>
+</div>
+
+</body>
+</html>
